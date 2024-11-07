@@ -2,9 +2,10 @@
 import { useEffect, useState, useRef } from "react";
 import words from "./words.json";
 
-export default function GameBoard() {
-  const secret = words["5"][Math.floor(Math.random() * words["5"].length)];
+// TODO: implement server side checking through api and less fucked
+const secret = words[Math.floor(Math.random() * words.length)];
 
+export default function GameBoard() {
   enum KeyState {
     Green = "green",
     Yellow = "yellow",
@@ -28,9 +29,7 @@ export default function GameBoard() {
   const [currentLine, setCurrentLine]: [Array<Key | null>, any] = useState([]);
 
   const [keyboard, setKeyboard] = useState({
-    row1: "QWERTYUIOP".split(""),
-    row2: "ASDFGHJKL".split(""),
-    row3: "ZXCVBNM".split(""),
+    rows: ["QWERTYUIOP".split(""), "ASDFGHJKL".split(""), "ZXCVBNM".split("")],
   });
 
   const containerRef = useRef<any>(null);
@@ -38,6 +37,8 @@ export default function GameBoard() {
     if (containerRef.current) containerRef.current.focus();
   }, []);
 
+  console.log({ grid, currentLine });
+  console.log({ secret });
   return (
     <div className="min-h-screen flex items-center justify-center flex-col text-center">
       <h1 className="text-3xl uppercase font-semibold mb-6 tracking-widest">
@@ -48,6 +49,12 @@ export default function GameBoard() {
         onKeyDown={({ key }) => {
           if (key === "Enter") {
             if (currentLine.length < 5) return;
+            if (
+              !words.includes(
+                currentLine.map((keyObj) => keyObj?.key ?? "").join("")
+              )
+            )
+              return;
             setGrid((prevGrid: Array<Array<Key | null>>) => [
               ...prevGrid,
               currentLine.map((key, index) => {
@@ -80,7 +87,6 @@ export default function GameBoard() {
               { key, state: KeyState.None },
             ]);
           }
-          console.log({ grid, currentLine });
         }}
         tabIndex={0}
         ref={containerRef}
@@ -112,36 +118,18 @@ export default function GameBoard() {
         ))}
       </div>
       <div className="grid grid-rows-3 mt-8">
-        <div className="flex gap-2 justify-center mt-2">
-          {keyboard.row1.map((key, index) => (
-            <button
-              key={index}
-              className="border-2 border-gray-200/20 rounded-lg min-w-12 h-12 flex items-center justify-center"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2 justify-center mt-2">
-          {keyboard.row2.map((key, index) => (
-            <button
-              key={index}
-              className="border-2 border-gray-200/20 rounded-lg min-w-12 h-12 flex items-center justify-center"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2 justify-center mt-2">
-          {keyboard.row3.map((key, index) => (
-            <button
-              key={index}
-              className="border-2 border-gray-200/20 rounded-lg min-w-12 h-12 flex items-center justify-center"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
+        {keyboard.rows.map((row) => (
+          <div className="flex gap-2 justify-center mt-2" key={row.join("")}>
+            {row.map((key, index) => (
+              <button
+                key={index}
+                className="border-2 border-gray-200/20 rounded-lg min-w-12 h-12 flex items-center justify-center"
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
