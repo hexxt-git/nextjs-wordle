@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import words from "./words.json";
 
 export default function GameBoard() {
-  const secret = 'svelte'
-  
+  const secret = words["5"][Math.floor(Math.random() * words["5"].length)];
+
   enum KeyState {
     Green = "green",
     Yellow = "yellow",
@@ -13,8 +14,8 @@ export default function GameBoard() {
 
   const backgroundMap: Map<KeyState, string> = new Map([
     [KeyState.Green, "#538d4e"],
-    [KeyState.Yellow, "#b59f3b"],
-    [KeyState.Gray, "#3a3a3c"],
+    [KeyState.Yellow, "#b5a62b"],
+    [KeyState.Gray, "#303032"],
     [KeyState.None, "transparent"],
   ]);
 
@@ -40,32 +41,44 @@ export default function GameBoard() {
   return (
     <div className="min-h-screen flex items-center justify-center flex-col text-center">
       <h1 className="text-3xl uppercase font-semibold mb-6 tracking-widest">
-        Wordle
+        Next.js Wordle
       </h1>
       <div
         className="grid gap-2 text-xl outline-none"
         onKeyDown={({ key }) => {
           if (key === "Enter") {
             if (currentLine.length < 5) return;
-            setGrid((prevGrid) => [
+            setGrid((prevGrid: Array<Array<Key | null>>) => [
               ...prevGrid,
               currentLine.map((key, index) => {
-                if(!key) key = {key: 'a', state: KeyState.None}
-                
-                key.state = secret[index] === key.key ? KeyState.Green : secret.includes(key.key) ? KeyState.Yellow : KeyState.Gray;
+                if (!key) key = { key: "a", state: KeyState.None };
+
+                key.state =
+                  secret[index] === key.key
+                    ? KeyState.Green
+                    : [...secret].some(
+                        (character, index) =>
+                          character == key.key &&
+                          secret[index] !== currentLine[index]?.key
+                      )
+                    ? KeyState.Yellow
+                    : KeyState.Gray;
 
                 return key;
               }),
             ]);
             setCurrentLine(() => []);
           } else if (key === "Backspace") {
-            setCurrentLine((prev) => prev.slice(0, -1));
+            setCurrentLine((prev: Array<Key | null>) => prev.slice(0, -1));
           } else if (
             key.trim().length == 1 &&
             currentLine.length < 5 &&
             grid.length < 6
           ) {
-            setCurrentLine((prev) => [...prev, { key, state: KeyState.None }]);
+            setCurrentLine((prev: Array<Key | null>) => [
+              ...prev,
+              { key, state: KeyState.None },
+            ]);
           }
           console.log({ grid, currentLine });
         }}
