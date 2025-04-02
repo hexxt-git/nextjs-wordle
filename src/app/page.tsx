@@ -96,7 +96,10 @@ export default function GameBoard() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col text-center">
+    <div
+      className="min-h-screen flex items-center justify-center flex-col text-center p-8"
+      ref={containerRef}
+    >
       <h1 className="text-3xl uppercase font-semibold mb-6 tracking-widest">
         Next.js Wordle
       </h1>
@@ -104,7 +107,6 @@ export default function GameBoard() {
         className="grid gap-2 text-xl outline-none"
         onKeyDown={({ key }) => press(key)}
         tabIndex={0}
-        ref={containerRef}
       >
         {[
           ...grid,
